@@ -7,8 +7,6 @@ const render = document.querySelector('#render');
 
 let tag = "";
 let record = false;
-let currLen = html.value.length
-
 /*
  * isElementSupported
  * Feature test HTML element support 
@@ -48,6 +46,7 @@ let currLen = html.value.length
 })(this);
 
 function execute() {
+    console.log(currLen)
     localStorage.setItem('html', html.value);
     localStorage.setItem('css', css.value);
     localStorage.setItem('js', js.value);
@@ -64,20 +63,13 @@ function execute() {
             let closing = "</" + tag + ">";
             html.value += closing
             const pos = html.value.length - closing.length;
-            // console.log(closing + " | " + tag);
+            html.setSelectionRange(pos, pos);
         }
         tag = "";
     }
-
     if (record) {
         if (html.value.slice(-1) != "<") {
-            if (currLen == html.value.length) {
-                tag = tag.concat(html.value.slice(-1));
-            } else {
-                let i = currLen - html.value.length;
-                tag = html.value.slice(0, -i);
-            }
-            console.log(tag);
+            tag = tag.concat(html.value.slice(-1));
         }
     }
 }
