@@ -56,17 +56,17 @@ function execute() {
     render.contentWindow.eval(localStorage.js);
 
     if (html.value.slice(-1) == "<") {
-        console.log("<");
         record = true;
     }
-    if (html.value.slice(-1) == ">" && isElementSupported(tag)) {
+    if (html.value.slice(-1) == ">") {
         record = false;
+        backed = false;
         if (tag.length != 0) {
             let closing = "</" + tag + ">";
             html.value += closing
             const pos = html.value.length - closing.length;
             html.setSelectionRange(pos, pos);
-            if (!tags.includes(tag) && isElementSupported(tag)) {
+            if (!tags.includes(tag)) {
                 tags.push(tag);
             }
             console.log(closing);
@@ -79,9 +79,13 @@ function execute() {
             const key = event.key;
             if (key === "Backspace") {
                 console.log("backspace detected");
-                tag = tag.slice(0, -1);
-                console.log("back: " + tag);
-                backed = true;
+                if (html.value.slice(-1) != "<") {
+                    tag = tag.slice(0, -1);
+                    console.log("back: " + tag);
+                    backed = true;
+                } else {
+                    console.log("Whoops");
+                }
                 return;
             }
         }
