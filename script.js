@@ -7,6 +7,8 @@ const render = document.querySelector('#render');
 
 let tag = "";
 let record = false;
+let backed = false;
+let tags = [];
 /*
  * isElementSupported
  * Feature test HTML element support 
@@ -46,7 +48,6 @@ let record = false;
 })(this);
 
 function execute() {
-    console.log(currLen)
     localStorage.setItem('html', html.value);
     localStorage.setItem('css', css.value);
     localStorage.setItem('js', js.value);
@@ -55,23 +56,49 @@ function execute() {
     render.contentWindow.eval(localStorage.js);
 
     if (html.value.slice(-1) == "<") {
+        console.log("<");
         record = true;
     }
-    if (html.value.slice(-1) == ">") {
+    if (html.value.slice(-1) == ">" && isElementSupported(tag)) {
         record = false;
         if (tag.length != 0) {
             let closing = "</" + tag + ">";
             html.value += closing
             const pos = html.value.length - closing.length;
             html.setSelectionRange(pos, pos);
+            if (!tags.includes(tag) && isElementSupported(tag)) {
+                tags.push(tag);
+            }
+            console.log(closing);
         }
         tag = "";
     }
     if (record) {
+        var input = html;
+        html.onkeydown = function() {
+            const key = event.key;
+            if (key === "Backspace") {
+                console.log("backspace detected");
+                tag = tag.slice(0, -1);
+                console.log("back: " + tag);
+                backed = true;
+                return;
+            }
+        }
         if (html.value.slice(-1) != "<") {
-            tag = tag.concat(html.value.slice(-1));
+            if (html.value.slice(-1) === "\n") {
+                console.log("newline detected");
+            } else {
+                if (backed) {
+                    backed = false;
+                } else {
+                    tag = tag.concat(html.value.slice(-1));
+                    console.log("tag: " + tag);
+                }
+            }
         }
     }
+    console.log(tags);
 }
 
 html.onkeyup = () => execute();
