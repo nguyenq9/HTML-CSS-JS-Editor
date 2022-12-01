@@ -9,6 +9,9 @@ let tag = "";
 let record = false;
 let backed = false;
 let tags = [];
+let htmlLen = 0;
+let states = [""];
+let numKeyClicks = 10;
 /*
  * isElementSupported
  * Feature test HTML element support 
@@ -47,7 +50,44 @@ let tags = [];
     
 })(this);
 
+function doKeyPress(event) {
+    const key = event.key;
+    if (key === "Backspace") {
+        console.log("backspace detected");
+        tag = tag.slice(0, -1);
+        backed = true;
+    } else if (key === "<") { 
+        record = true;
+        console.log("Recording is ON");
+    } else if (event.keyCode == 190) {
+        if (tag.length != 0 && isElementSupported(tag)) {
+            let closing = "</" + tag + ">";
+            html.value += closing;
+            const pos = html.value.length - closing.length;
+            html.setSelectionRange(pos, pos);
+            if (!tags.includes(tag)) {
+                tags.push(tag);
+            }
+            html.removeEventListener('keydown', doKeyPress);
+            console.log(closing);
+        }
+        tag = "";
+        record = false;
+        backed = false;
+        console.log("Recording is OFF");
+    }  else if ((event.keyCode >= 48 && event.keyCode <= 90) || (event.keyCode >= 96 && event.keyCode <= 111)){
+        tag = tag.concat(key);
+        console.log(tag + " &&&&&");
+    }
+}
+
 function execute() {
+    let currVal = html.value;
+    numKeyClicks--;
+    if (numKeyClicks == 0) {
+        states.unshift(currVal);
+        numKeyClicks = 10;
+    }
     localStorage.setItem('html', html.value);
     localStorage.setItem('css', css.value);
     localStorage.setItem('js', js.value);
@@ -55,62 +95,43 @@ function execute() {
     render.contentDocument.body.innerHTML = `<style>${localStorage.css}</style>` + localStorage.html;
     render.contentWindow.eval(localStorage.js);
 
-    if (html.value.slice(-1) == "<") {
-        record = true;
-    }
-    if (html.value.slice(-1) == ">") {
-        record = false;
-        backed = false;
-        if (tag.length != 0) {
-            let closing = "</" + tag + ">";
-            html.value += closing
-            const pos = html.value.length - closing.length;
-            html.setSelectionRange(pos, pos);
-            if (!tags.includes(tag)) {
-                tags.push(tag);
-            }
-            console.log(closing);
-        }
-        tag = "";
-    }
-    if (record) {
-        var input = html;
-        html.onkeydown = function() {
-            const key = event.key;
-            if (key === "Backspace") {
-                console.log("backspace detected");
-                if (html.value.slice(-1) != "<") {
-                    tag = tag.slice(0, -1);
-                    console.log("back: " + tag);
-                    backed = true;
-                } else {
-                    console.log("Whoops");
-                }
-                return;
-            }
-        }
-        if (html.value.slice(-1) != "<") {
-            if (html.value.slice(-1) === "\n") {
-                console.log("newline detected");
-            } else {
-                if (backed) {
-                    backed = false;
-                } else {
-                    tag = tag.concat(html.value.slice(-1));
-                    console.log("tag: " + tag);
-                }
-            }
-        }
-    }
-    console.log(tags);
+    html.addEventListener('keydown', doKeyPress);
+
+    // const interval = setInterval(function() {
+    //     states[stateIndex] = currVal;
+    //     if (stateIndex == 0) {
+    //         stateIndex = 4;
+    //         console.log(stateIndex);
+    //     } else {
+    //         stateIndex--;
+    //         console.log(stateIndex);
+    //     }
+
+    // }, 5000);
+
+    // console.log(tags);
 }
+
+function ctrlZ(e) {
+    var evtobj = window.event? event : e
+    if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
+        html.value = states.pop();
+        console.log(states);
+    }
+}
+
+document.onkeydown = ctrlZ;
 
 html.onkeyup = () => execute();
 css.onkeyup = () => execute();
 js.onkeyup = () => execute();
 
-html.value = localStorage.html_code;
-css.value = localStorage.css_code;
-js.value = localStorage.js_code;
+// html.value = localStorage.html_code;
+// css.value = localStorage.css_code;
+// js.value = localStorage.js_code;
+
+html.value = ""
+css.value = ""
+js.value = ""
 
 
