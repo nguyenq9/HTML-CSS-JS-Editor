@@ -45,7 +45,7 @@ function doKeyPress(event) {
             tag = tag.concat(key);
         }
         console.log("Recording is ON");
-    } else if (event.keyCode == 190) {
+    } else if (event.keyCode == 190 && record) {
         tag = tag.replace("<", "");
         tag = tag.replace(">", "");
         if (tag.length != 0 && isElementSupported(tag)) {
@@ -56,10 +56,10 @@ function doKeyPress(event) {
             if (!tags.includes(tag)) {
                 tags.push(tag);
             }
-            html.removeEventListener('keydown', doKeyPress);
             console.log(closing);
             closed = true;
             tag = "";
+            html.removeEventListener('keydown', doKeyPress);
         } else {
             if (!closed) {
                 tag = tag.concat(key);
@@ -95,11 +95,13 @@ function execute() {
 
 }
 
+
 function ctrlZ(e) {
     var evtobj = window.event? event : e
     if (evtobj.keyCode == 90 && evtobj.ctrlKey) {
         html.value = states.pop();
         console.log(states);
+        tag = tag.slice(0, -1);
     }
 }
 
@@ -113,10 +115,10 @@ js.onkeyup = () => execute();
 // css.value = localStorage.css_code;
 // js.value = localStorage.js_code;
 
-html.value = "<h1 onclick=\"sayHello()\">Hello World!<h1>"
-css.value = "h1 {\ncolor: green;\n}"
-js.value = "function sayHello() {\nalert(\"Hello\")\n}"
+html.value = "<h1 onclick=\"sayHello()\">Hello World!<h1>";
+css.value = "h1 {\ncolor: green;\n}";
+js.value = "function sayHello() {\nalert(\"Hello\")\n}";
 
-execute()
+execute();
 
 
