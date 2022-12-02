@@ -12,42 +12,24 @@ let tags = [];
 let htmlLen = 0;
 let states = [""];
 let numKeyClicks = 10;
-/*
- * isElementSupported
- * Feature test HTML element support 
- * @param {String} tag
- * @return {Boolean|Undefined}
- */
+let closed = false;
 
 (function(win){
     'use strict';       
-
     var toString = {}.toString;
-
     win.isElementSupported = function isElementSupported(tag) {
-        // Return undefined if `HTMLUnknownElement` interface
-        // doesn't exist
         if (!win.HTMLUnknownElement) {
             return undefined;
         }
-        // Create a test element for the tag
         var element = document.createElement(tag);
-        // Check for support of custom elements registered via
-        // `document.registerElement`
         if (tag.indexOf('-') > -1) {
-            // Registered elements have their own constructor, while unregistered
-            // ones use the `HTMLElement` or `HTMLUnknownElement` (if invalid name)
-            // constructor (http://stackoverflow.com/a/28210364/1070244)
             return (
                 element.constructor !== window.HTMLUnknownElement &&
                 element.constructor !== window.HTMLElement
             );
         }
-        // Obtain the element's internal [[Class]] property, if it doesn't 
-        // match the `HTMLUnknownElement` interface than it must be supported
         return toString.call(element) !== '[object HTMLUnknownElement]';
     };
-    
 })(this);
 
 function doKeyPress(event) {
@@ -57,9 +39,15 @@ function doKeyPress(event) {
         tag = tag.slice(0, -1);
         backed = true;
     } else if (key === "<") { 
+        closed = false;
         record = true;
+        if (!closed) {
+            tag = tag.concat(key);
+        }
         console.log("Recording is ON");
     } else if (event.keyCode == 190) {
+        tag = tag.replace("<", "");
+        tag = tag.replace(">", "");
         if (tag.length != 0 && isElementSupported(tag)) {
             let closing = "</" + tag + ">";
             html.value += closing;
@@ -70,14 +58,22 @@ function doKeyPress(event) {
             }
             html.removeEventListener('keydown', doKeyPress);
             console.log(closing);
+            closed = true;
+            tag = "";
+        } else {
+            if (!closed) {
+                tag = tag.concat(key);
+            }
+            console.log(tag + " not supported");
         }
-        tag = "";
-        record = false;
-        backed = false;
-        console.log("Recording is OFF");
+        if (closed) {
+            record = false;
+            backed = false;
+            console.log("Recording is OFF");
+        }
     }  else if ((event.keyCode >= 48 && event.keyCode <= 90) || (event.keyCode >= 96 && event.keyCode <= 111)){
         tag = tag.concat(key);
-        console.log(tag + " &&&&&");
+        console.log(tag);
     }
 }
 
@@ -97,19 +93,6 @@ function execute() {
 
     html.addEventListener('keydown', doKeyPress);
 
-    // const interval = setInterval(function() {
-    //     states[stateIndex] = currVal;
-    //     if (stateIndex == 0) {
-    //         stateIndex = 4;
-    //         console.log(stateIndex);
-    //     } else {
-    //         stateIndex--;
-    //         console.log(stateIndex);
-    //     }
-
-    // }, 5000);
-
-    // console.log(tags);
 }
 
 function ctrlZ(e) {
@@ -130,8 +113,10 @@ js.onkeyup = () => execute();
 // css.value = localStorage.css_code;
 // js.value = localStorage.js_code;
 
-html.value = ""
-css.value = ""
-js.value = ""
+html.value = "<h1 onclick=\"sayHello()\">Hello World!<h1>"
+css.value = "h1 {\ncolor: green;\n}"
+js.value = "function sayHello() {\nalert(\"Hello\")\n}"
+
+execute()
 
 
