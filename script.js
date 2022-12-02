@@ -14,6 +14,10 @@ let states = [""];
 let numKeyClicks = 10;
 let closed = false;
 
+html.value = "<h1 onclick=\"sayHello()\">Hello World!<h1>";
+css.value = "h1 {\ncolor: green;\n}";
+js.value = "function sayHello() {\nalert(\"Hello\")\n}";
+
 (function(win){
     'use strict';       
     var toString = {}.toString;
@@ -72,8 +76,10 @@ function doKeyPress(event) {
             console.log("Recording is OFF");
         }
     }  else if ((event.keyCode >= 48 && event.keyCode <= 90) || (event.keyCode >= 96 && event.keyCode <= 111)){
-        tag = tag.concat(key);
-        console.log(tag);
+        if (record) {
+            tag = tag.concat(key);
+            console.log(tag);
+        }
     }
 }
 
@@ -92,7 +98,6 @@ function execute() {
     render.contentWindow.eval(localStorage.js);
 
     html.addEventListener('keydown', doKeyPress);
-
 }
 
 
@@ -105,19 +110,33 @@ function ctrlZ(e) {
     }
 }
 
+function loadEx1() {
+    html.value = "<p><button onclick=\"myMove()\">Click Me</button>\n</p>\n<div id=\"myContainer\">\n<div id =\"myAnimation\"></div>\n</div>";
+    css.value = "#myContainer \{ \nwidth: 400px; \nheight: 400px\; \nposition: relative\; \nbackground: yellow\;\n\} \n#myAnimation \{\nwidth: 50px\;\nheight: 50px\;\nposition: absolute\;\nbackground-color: red\;\n\}";
+    js.value = "var id = null\;\nfunction myMove() \{\nvar elem = document.getElementById(\"myAnimation\")\;   \nvar pos = 0\;\nclearInterval(id)\;\nid = setInterval(frame, 10)\;\nfunction frame() \{\nif (pos == 350) \{\nclearInterval(id)\;\n\} else \{\npos++; elem.style.top = pos + 'px'\; elem.style.left = pos + 'px'\; \}\}\}";
+    execute();
+    console.log("loaded new text");
+}
+
+function loadEx2() {
+    html.value = "<h1>HTML DOM Events</h1>\n<h2>The onclick Event</h2>\n<p>The onclick event triggers a function when an element is clicked on.</p>\n<p>Click to trigger a function that will output \"Hello World\":</p>\n<button onclick=\"myFunction()\">Click me</button>\n<p id=\"demo\"></p>"
+    css.value = "button {\n background-color:red;\n}"
+    js.value = "function myFunction() { document.getElementById(\"demo\").innerHTML = \"Hello World\"\;}"
+    execute();
+}
+ 
+function loadEx3() {
+    html.value = "<body>\n<iframe width=\"420\" height=\"345\" src=\"https://www.youtube.com/embed/tgbNymZ7vqY\"></iframe>\n</body>"
+    css.value = ""
+    js.value = ""
+    execute();
+}
+
 document.onkeydown = ctrlZ;
 
 html.onkeyup = () => execute();
 css.onkeyup = () => execute();
 js.onkeyup = () => execute();
-
-// html.value = localStorage.html_code;
-// css.value = localStorage.css_code;
-// js.value = localStorage.js_code;
-
-html.value = "<h1 onclick=\"sayHello()\">Hello World!<h1>";
-css.value = "h1 {\ncolor: green;\n}";
-js.value = "function sayHello() {\nalert(\"Hello\")\n}";
 
 execute();
 
